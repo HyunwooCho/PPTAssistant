@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QThread, Signal
-from PySide6.QtGui import QDragEnterEvent, QDropEvent, QFont
+from PySide6.QtGui import QDragEnterEvent, QDragMoveEvent, QDropEvent, QFont
 from PySide6.QtWidgets import (
     QCheckBox,
     QFileDialog,
@@ -52,21 +52,67 @@ class Worker(QThread):
 class DropList(QListWidget):
     files_dropped = Signal(list)
 
+    SUPPORTED_EXTENSIONS = {".pptx", ".potx"}
+
     def __init__(self) -> None:
         super().__init__()
         self.setAcceptDrops(True)
+        self.viewport().setAcceptDrops(True)
+        self.setDragEnabled(False)
         self.setMinimumHeight(150)
         self.setToolTip("Drop PPTX or POTX files here")
 
+    def _has_valid_file(self, event: QDropEvent | QDragMoveEvent) -> bool:
+        mime_data = event.mimeData()
+        if not mime_data.hasUrls():
+            return False
+        return any(
+            url.isLocalFile()
+            and Path(url.toLocalFile()).suffix.lower() in self.SUPPORTED_EXTENSIONS
+            for url in mime_data.urls()
+        )
+
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
-        if event.mimeData().hasUrls():
+        # print("Drag enter event")
+
+        if self._has_valid_file(event):
             event.acceptProposedAction()
+        else:
+            event.ignore()
+
+        # if event.mimeData().hasUrls():
+        #     event.acceptProposedAction()
+
+    def dragMoveEvent(self, event: QDragMoveEvent) -> None:
+        # print("Drag move event")
+
+        if self._has_valid_file(event):
+            event.acceptProposedAction()
+        else:
+            event.ignore()
 
     def dropEvent(self, event: QDropEvent) -> None:
-        paths = [Path(url.toLocalFile()) for url in event.mimeData().urls()]
-        valid = [p for p in paths if p.suffix.lower() in {".pptx", ".potx"}]
-        self.files_dropped.emit(valid)
-        event.acceptProposedAction()
+        # print("Drop event")
+
+        paths = [
+            Path(url.toLocalFile())
+            for url in event.mimeData().urls()
+            if url.isLocalFile()
+        ]
+
+        valid = [
+            path
+            for path in paths
+            if path.suffix.lower() in self.SUPPORTED_EXTENSIONS
+        ]
+
+        if valid:
+            self.files_dropped.emit(valid)
+            event.acceptProposedAction()
+        else:
+            event.ignore()
+        # self.files_dropped.emit(valid)
+        # event.acceptProposedAction()
 
 
 class MainWindow(QMainWindow):
@@ -74,11 +120,12 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.files: list[Path] = []
         self.worker: Worker | None = None
-        self.setWindowTitle("PPT Assistant v3.0 - tenace")
+        self.setWindowTitle("PPT Assistant v3.0 by TENACE")
         self.resize(840, 680)
-        self.setAcceptDrops(True)
+        # self.setAcceptDrops(True)
         self._build_ui()
         self._apply_style()
+        self._check_admin_privileges()
 
     def _build_ui(self) -> None:
         root = QWidget()
@@ -160,6 +207,25 @@ class MainWindow(QMainWindow):
             QProgressBar::chunk { background: #00a6d6; border-radius: 6px; }
             """
         )
+
+    def _check_admin_privileges(self) -> None:
+        try:
+            import ctypes
+            is_admin = bool(ctypes.windll.shell32.IsUserAnAdmin())
+        except (AttributeError, OSError):
+            is_admin = False
+        print(f"Administrator privileges: {is_admin}")
+
+        if is_admin:
+            QMessageBox.warning(
+                self,
+                "Administrator mode detected",
+                "PPT Assistant is running with administrator privileges. Some features may not work correctly.\n\n"
+                "Windows Explorer normally runs without administrator privileges, so if you want to use PPT Assistant with administrator privileges, "
+                "so files may not be draggable from Explorer into this application.\n\n"
+                "Close this application and run it normally, "
+                "not with 'Run as administrator'.",
+            )
 
     def choose_files(self) -> None:
         names, _ = QFileDialog.getOpenFileNames(
