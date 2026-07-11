@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run PPT Assistant",
+            "type": "python",
+            "request": "launch",
+            "module": "pptassistant",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ]
+}
