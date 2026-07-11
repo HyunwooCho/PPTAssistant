@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pptassistant"
+version = "3.0.0"
+description = "PowerPoint cleanup and style assistant"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{name = "tenace"}]
+dependencies = [
+  "PySide6>=6.7",
+  "python-pptx>=1.0.2",
+  "Pillow>=10.4",
+  "lxml>=5.2",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.2",
+  "ruff>=0.5",
+  "pyinstaller>=6.10",
+]
+
+[project.scripts]
+pptassistant = "pptassistant.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

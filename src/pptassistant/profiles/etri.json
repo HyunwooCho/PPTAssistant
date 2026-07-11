@@ -1,0 +1,19 @@
+{
+  "id": "etri",
+  "name": "ETRI Style",
+  "author": "tenace",
+  "description": "Default ETRI-oriented style profile. Replace placeholder values after template extraction.",
+  "fonts": {
+    "title": "Paperlogy 8 ExtraBold",
+    "heading": "Paperlogy 7 Bold",
+    "body": "Pretendard"
+  },
+  "colors": {
+    "primary": "#005BAC",
+    "secondary": "#6F7A85",
+    "accent": "#00A6D6"
+  },
+  "table": {
+    "fallback": "modern_blue"
+  }
+}
