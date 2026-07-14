@@ -1,8 +1,13 @@
 # PPT Assistant
 
+<p align="right">
+  <strong>English</strong> |
+  <a href="README_KR.md">한국어</a>
+</p>
+
 PowerPoint cleanup, formatting, and company-style automation utility for Windows.
 
-**Author:** tenace
+**Author:** tenace@etri.re.kr
 **Current development version:** 3.0.0-alpha
 **Supported Python:** 3.12+
 
